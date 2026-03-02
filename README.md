@@ -6,14 +6,14 @@ This repository documents the systematic research, development, and optimization
 
 The final alpha expression utilizes a multi-stage pipeline to process price-action bias:
 
-$$Alpha = \text{ts\_rank}(\text{group\_rank}(\text{group\_zscore}(\frac{\frac{High+Low}{2} - Close}{Close}, \text{group}), \text{group}), T)$$
+$$Alpha = \text{ts\_rank}(\text{group\_rank}(\text{group\_zscore}(\frac{\frac{High + Low}{2} - Close}{Close}, \text{group}), \text{group}), T)$$
 
 ### Logical Architecture:
 1. **Normalized Settlement Bias**: Measuring the distance between the daily midpoint $(High+Low)/2$ and $Close$, scaled by price to ensure cross-sectional comparability.
 2. **Hierarchical Normalization**:
-   - `group_zscore(country)`: First-stage risk cleaning. Evaluates asset deviation relative to its specific national market volatility.
-   - `group_rank(industry)`: Second-stage refinement. Identifies relative "winners" and "losers" within peer industry groups, making the signal robust against sector-wide shocks.
-3. **Temporal Stationarity**: A 700-day `ts_rank` window ensures the signal captures historically significant exhaustion events rather than high-frequency noise.
+   - `group\_zscore(group)`: First-stage risk cleaning. Evaluates asset deviation relative to its specific group volatility.
+   - `group\_rank(group)`: Second-stage refinement. Identifies relative "winners" and "losers" within peer groups.
+3. **Temporal Stationarity**: A 700-day `ts\_rank` window ensures the signal captures historically significant exhaustion events.
 
 ---
 
