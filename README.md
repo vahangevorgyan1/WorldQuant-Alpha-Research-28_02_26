@@ -1,51 +1,12 @@
-# Quantitative Research: Hierarchical Price Exhaustion Alpha
-
-This repository documents the systematic research, development, and optimization of a statistical arbitrage signal for the WorldQuant BRAIN platform. The project focuses on identifying intraday price anomalies through multi-level group normalization and long-term stationarity filters.
-
 ## 📐 The Mathematical Model
 
 The final alpha expression utilizes a multi-stage pipeline to process price-action bias:
 
-$$Alpha = \text{ts\_rank}(\text{group\_rank}(\text{group\_zscore}(\frac{\frac{High + Low}{2} - Close}{Close}, \text{group}), \text{group}), T)$$
+$$Alpha = ts\_rank(group\_rank(group\_zscore(\frac{\frac{High + Low}{2} - Close}{Close}, group), group), T)$$
 
 ### Logical Architecture:
 1. **Normalized Settlement Bias**: Measuring the distance between the daily midpoint $(High + Low) / 2$ and $Close$, scaled by price to ensure cross-sectional comparability.
 2. **Hierarchical Normalization**:
-   - `group\_zscore(group)`: First-stage risk cleaning. Evaluates asset deviation relative to its specific group volatility (e.g., country-level).
-   - `group\_rank(group)`: Second-stage refinement. Identifies relative "winners" and "losers" within peer groups (e.g., industry-level), making the signal robust against sector-wide shocks.
-3. **Temporal Stationarity**: A 700-day `ts\_rank` window ensures the signal captures historically significant exhaustion events rather than high-frequency noise.
-
----
-
-## 🔬 Research & Optimization (Grid Search)
-
-The model parameters were selected via an exhaustive **Grid Search** across a 4-dimensional parameter space $\Omega$:
-* **Groups**: `[country, industry, subindustry, sector]`
-* **Lookback (T)**: `[20:1000]` with a step of 50.
-* **Decay**: `[10:110]` with a step of 10.
-* **Neutralization**: `[market, industry, sector, statistical, crowding]`.
-
-### Key Findings:
-* **Optimal Decay (110)**: Increasing decay to 110 significantly reduced Turnover to the 32% range while maintaining a high Sharpe Ratio.
-* **Group Synergy**: The combination of `industry` ranking and `statistical` neutralization provided the cleanest idiosyncratic alpha.
-
----
-
-## 🎯 Thematic Focus: EUR D1 Power Pool
-
-The research is strictly aligned with the **WorldQuant Power Pool Thematic Competition (EUR/D1/PV)**:
-* **Region**: Europe (EUR)
-* **Universe**: `TOPCS1600` (Highly liquid European equities)
-* **Delay**: 1 (D1)
-* **Multiplier**: 1.1x
-
----
-
-## 📊 Performance Metrics
-
-The submitted alpha achieved the following verified results:
-
-| Metric | Value | Cutoff | Result |
-| :--- | :--- | :--- | :--- |
-| **Sharpe Ratio** | **2.24** | 1.58 | ✅ Pass |
-| **2-Year Sharpe** | **1
+   - `group_zscore(group)`: First-stage risk cleaning. Evaluates asset deviation relative to its specific group volatility (e.g., country-level).
+   - `group_rank(group)`: Second-stage refinement. Identifies relative "winners" and "losers" within peer groups (e.g., industry-level), making the signal robust against sector-wide shocks.
+3. **Temporal Stationarity**: A 700-day `ts_rank` window ensures the signal captures historically significant exhaustion events rather than high-frequency noise.
