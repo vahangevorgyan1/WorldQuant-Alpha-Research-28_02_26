@@ -13,7 +13,7 @@ $$Alpha = ts\_rank(group\_rank(group\_zscore(\frac{\frac{High + Low}{2} - Close}
 2. **Hierarchical Normalization**:
    - `group_zscore(group)`: First-stage risk cleaning. Evaluates asset deviation relative to its specific group volatility (e.g., country-level).
    - `group_rank(group)`: Second-stage refinement. Identifies relative "winners" and "losers" within peer groups (e.g., industry-level), making the signal robust against sector-wide shocks.
-
+3. **Temporal Stationarity**: A 700-day `ts_rank` window ensures the signal captures historically significant exhaustion events rather than high-frequency noise.
 ---
 
 ## 🔬 Research & Optimization (Grid Search)
@@ -23,11 +23,6 @@ The model parameters were selected via an exhaustive **Grid Search** across a 4-
 * **Lookback (T)**: `[20:1000]` with a step of 50.
 * **Decay**: `[10:110]` with a step of 10.
 * **Neutralization**: `[market, industry, sector, statistical, crowding]`.
-
-### Key Findings:
-* **Optimal Decay (110)**: Increasing decay to 110 significantly reduced Turnover to the 32.22% range while maintaining a high Sharpe Ratio.
-* **Group Synergy**: The combination of `industry` ranking and `statistical` neutralization provided the cleanest idiosyncratic alpha.
-
 ---
 
 ## 🎯 Thematic Focus: EUR D1 Power Pool
@@ -36,8 +31,6 @@ The research is strictly aligned with the **WorldQuant Power Pool Thematic Compe
 * **Region**: Europe (EUR)
 * **Universe**: `TOPCS1600` (Highly liquid European equities)
 * **Delay**: 1 (D1)
-* **Multiplier**: 1.1x
-
 ---
 
 ## 📊 Performance Metrics
@@ -61,6 +54,3 @@ The submitted alpha achieved the following verified results:
 * `results/`: CSV exports of the parameter search space.
 
 ---
-
-
-3. **Temporal Stationarity**: A 700-day `ts_rank` window ensures the signal captures historically significant exhaustion events rather than high-frequency noise.
