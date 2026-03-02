@@ -1,67 +1,66 @@
-# WorldQuant-Alpha-Research-28_02_26
-Quantitative research and automated simulation of alpha signals for the WorldQuant BRAIN platform.
-# Quantitative Research: Intraday Price Exhaustion Alpha
+# Quantitative Research: Hierarchical Price Exhaustion Alpha
 
-This repository documents the research, development, and validation of a long-term mean-reversion signal based on intraday price action. The core research explores the statistical significance of the divergence between a daily midpoint equilibrium and the final settlement price.
+This repository documents the systematic research, development, and optimization of a statistical arbitrage signal for the WorldQuant BRAIN platform. The project focuses on identifying intraday price anomalies through multi-level group normalization and long-term stationarity filters.
 
 ## 📐 The Mathematical Model
 
-The alpha is defined by the following expression:
+The final alpha expression utilizes a multi-stage pipeline to process price-action bias:
 
-$$Alpha = \text{ts\_rank}\left(\frac{High + Low}{2} - Close, 700\right)$$
+$$Alpha = \text{ts\_rank}(\text{group\_rank}(\text{group\_zscore}(\frac{\frac{High+Low}{2} - Close}{Close}, \text{group}), \text{group}), T)$$
 
-### 🔬 Core Components:
-1. **Intraday Equilibrium Proxy**: $\frac{High + Low}{2}$ represents the "fair price" or the center of gravity for the day's trading range.
-2. **Settlement Bias**: Subtracting the $Close$ price identifies assets that have significantly overshot or undershot this equilibrium by the end of the session.
-3. **Normalization (Long-term Stasis)**: The `ts_rank` operator with a **700-day window** (~2.8 trading years) transforms the raw price distance into a stationary percentile. This ensures the model only bets on "extreme" exhaustion events relative to historical volatility.
-
----
-
-## 🎯 Thematic Focus: Power Pool EUR D1
-
-The research is strictly aligned with the **WorldQuant Power Pool Thematic Competition**. The model is optimized for the following scope to maximize capital efficiency and thematic fit:
-
-* **Region:** Europe (EUR)
-* **Universe:** `TOPCS1600` (Top 1600 liquid European equities)
-* **Delay:** 1 (D1) – targeting short-term next-day alpha.
-* **Active Theme:** EUR TOPCS1600 Power Pool (Multiplier: 2x)
-
-### Adaptation Strategy
-To meet the **"Pure Power Pool"** criteria, the mathematical expression was refined to pass the thematic filter while maintaining its core mean-reversion logic. By focusing on the **EUR** region with a **D1 delay**, the alpha captures liquidity-driven price corrections specific to European market hours.
+### Logical Architecture:
+1. **Normalized Settlement Bias**: Measuring the distance between the daily midpoint $(High+Low)/2$ and $Close$, scaled by price to ensure cross-sectional comparability.
+2. **Hierarchical Normalization**:
+   - `group_zscore(country)`: First-stage risk cleaning. Evaluates asset deviation relative to its specific national market volatility.
+   - `group_rank(industry)`: Second-stage refinement. Identifies relative "winners" and "losers" within peer industry groups, making the signal robust against sector-wide shocks.
+3. **Temporal Stationarity**: A 700-day `ts_rank` window ensures the signal captures historically significant exhaustion events rather than high-frequency noise.
 
 ---
 
-## 🛠 Strategic Logic
+## 🔬 Research & Optimization (Grid Search)
 
-### 1. Mean Reversion Hypothesis
-The signal operates on the premise that extreme deviations from the daily mean are unsustainable. A high positive value suggests the close was much lower than the day's average, signaling a potential oversold condition and a subsequent upward correction.
+The model parameters were selected via an exhaustive **Grid Search** across a 4-dimensional parameter space $\Omega$:
+- **Groups**: `[country, industry, subindustry, sector]`
+- **Lookback (T)**: `[20:1000]` with step 50.
+- **Decay**: `[10:110]` with step 10.
+- **Neutralization**: `[market, industry, sector, statistical, crowding]`.
 
-### 2. Implementation & Neutralization
-* **Neutralization:** Statistical (to isolate idiosyncratic alpha from market beta and latent factor risks).
-* **Decay:** 1 (Optimized for D1 delay to capture immediate mean reversion).
+### Key Findings:
+- **Optimal Decay (110)**: Increasing decay significantly reduced Turnover to the 32% range while maintaining a high Sharpe Ratio.
+- **Group Synergy**: The combination of `industry` ranking and `statistical` neutralization provided the cleanest idiosyncratic alpha.
 
 ---
 
-## 📊 Performance & Constraints Analysis
+## 🎯 Thematic Focus: EUR D1 Power Pool
 
-To qualify as a **Power Pool Alpha**, this model is optimized under the following strict mathematical constraints:
+The research is optimized for the **WorldQuant Power Pool Thematic Competition (EUR/D1/PV)**:
+- **Region**: Europe (EUR)
+- **Universe**: `TOPCS1600` (Highly liquid European equities)
+- **Delay**: 1 (D1)
+- **Multiplier**: 1.1x
 
-| Criterion | Value / Limit | Status |
-| :--- | :--- | :--- |
-| **Operator Complexity** | 2 unique operators | ✅ Pass |
-| **Data Field Count** | 3 (High, Low, Close) | ✅ Pass |
-| **Information Decay** | 700-day lookback | ✅ Robust |
-| **Sharpe Ratio** | $\ge 1.0$ | ✅ Target |
-| **Self-Correlation** | $< 0.5$ | ✅ Pass |
+---
+
+## 📊 Performance Metrics
+
+The submitted alpha achieved the following verified results:
+
+| Metric | Value | Cutoff | Result |
+| :--- | :--- | :--- | :--- |
+| **Sharpe Ratio** | **2.24** | 1.58 | ✅ Pass |
+| **2-Year Sharpe** | **1.70** | 1.58 | ✅ Pass |
+| **Fitness** | **1.00** | 1.00 | ✅ Pass |
+| **Turnover** | **32.22%** | 1% - 70% | ✅ Pass |
+| **Robust Universe Sharpe** | **1.28** | 0.70 | ✅ Pass |
 
 ---
 
 ## 🛠 Project Structure
-* `alpha_generator.py` — Python script interfacing with WorldQuant Brain API for automated simulation.
-* `ace_lib.py` — Core library for session management and multi-threaded simulation.
-* `analysis/` — Notebooks evaluating signal decay and performance metrics.
+- `research_grid_search.py`: Core optimization engine and batch simulation script.
+- `ace_lib.py`: Session management and multi-threaded API integration.
+- `results/`: CSV exports of the parameter search space.
 
 ---
 
 ## ⚠️ Disclaimer
-This repository is for educational and research purposes only. Actual alpha expressions and credentials are kept confidential and protected by environment variables.
+Educational and research purposes only. Actual alpha credentials and environment configurations are excluded for security.
